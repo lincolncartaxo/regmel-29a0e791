@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "LCL/ELETRON - RegMel" },
+      { name: "description", content: "Resumo Dashboard presents key data from a shared spreadsheet in a modern, intuitive dashboard interface." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "LCL/ELETRON - RegMel" },
+      { property: "og:description", content: "Resumo Dashboard presents key data from a shared spreadsheet in a modern, intuitive dashboard interface." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "LCL/ELETRON - RegMel" },
+      { name: "twitter:description", content: "Resumo Dashboard presents key data from a shared spreadsheet in a modern, intuitive dashboard interface." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/865bf9b5-a31c-442a-b704-99694143af94/id-preview-3b43947c--843bb1cc-03f0-45d9-a49e-69d1a7b746f7.lovable.app-1780038615225.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/865bf9b5-a31c-442a-b704-99694143af94/id-preview-3b43947c--843bb1cc-03f0-45d9-a49e-69d1a7b746f7.lovable.app-1780038615225.png" },
     ],
     links: [
       {
