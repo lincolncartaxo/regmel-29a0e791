@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { comunidades, totals } from "@/data/resumo";
+import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { getResumo, type Comunidade } from "@/lib/resumo.functions";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { ArrowUpRight, Users, CheckCircle2, XCircle, FileText, TrendingDown, Building2 } from "lucide-react";
+import { ArrowUpRight, Users, CheckCircle2, XCircle, FileText, TrendingDown, Building2, RefreshCw } from "lucide-react";
+
+const resumoQuery = queryOptions({
+  queryKey: ["resumo"],
+  queryFn: () => getResumo(),
+  staleTime: 60_000,
+  refetchInterval: 120_000,
+});
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -13,6 +21,7 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Dashboard de acompanhamento das APFs nas comunidades de João Pessoa-PB." },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(resumoQuery),
   component: Dashboard,
 });
 
@@ -20,6 +29,10 @@ const fmt = (n: number) => n.toLocaleString("pt-BR");
 const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
 
 function Dashboard() {
+  const { data } = useSuspenseQuery(resumoQuery);
+  const queryClient = useQueryClient();
+  const { comunidades, totals, updatedAt } = data;
+
   const ativas = comunidades.filter((c) => c.status === "em_andamento");
   const pendentes = comunidades.filter((c) => c.status === "pendente").length;
   const metaTotal = totals.subtotal;
@@ -28,7 +41,7 @@ function Dashboard() {
   const cobertura = pct(metaTotal + totals.desvio, metaTotal);
 
   const barData = comunidades.map((c) => ({
-    name: c.comunidade.replace("Comunidade ", "").split(" - ")[0].slice(0, 18),
+    name: c.comunidade.slice(0, 18),
     Meta: c.subtotal,
     Atingido: c.subtotal + c.desvio,
   }));
@@ -40,11 +53,12 @@ function Dashboard() {
     { name: "Sem consulta", value: totals.semContratoSemConsulta, color: "var(--chart-3)" },
   ];
 
+  const updated = new Date(updatedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
+        <div className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl flex items-center justify-center text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
               <Building2 className="h-5 w-5" />
@@ -54,45 +68,34 @@ function Dashboard() {
               <p className="text-xs text-muted-foreground">João Pessoa / PB · {comunidades.length} APFs monitoradas</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-[var(--success)] animate-pulse" />
-            Dados consolidados
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex flex-col items-end text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[var(--success)] animate-pulse" />
+                Dados ao vivo
+              </div>
+              <span className="text-[10px]">Atualizado {updated}</span>
+            </div>
+            <button
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["resumo"] })}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent transition-colors"
+              title="Atualizar agora"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Atualizar
+            </button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8 space-y-8">
-        {/* KPIs */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard
-            label="Total de famílias"
-            value={fmt(totals.total)}
-            icon={<Users className="h-4 w-4" />}
-            hint={`${comunidades.length} comunidades`}
-          />
-          <KpiCard
-            label="Meta (50% + 1)"
-            value={fmt(totals.subtotal)}
-            icon={<FileText className="h-4 w-4" />}
-            hint={`${cobertura}% de cobertura atual`}
-          />
-          <KpiCard
-            label="Aptos"
-            value={fmt(aptosTotal)}
-            icon={<CheckCircle2 className="h-4 w-4" />}
-            hint={`${pct(aptosTotal, totals.total)}% do total`}
-            tone="success"
-          />
-          <KpiCard
-            label="Desvio para meta"
-            value={fmt(totals.desvio)}
-            icon={<TrendingDown className="h-4 w-4" />}
-            hint={`${pendentes} comunidades pendentes`}
-            tone="danger"
-          />
+          <KpiCard label="Total de famílias" value={fmt(totals.total)} icon={<Users className="h-4 w-4" />} hint={`${comunidades.length} comunidades`} />
+          <KpiCard label="Meta (50% + 1)" value={fmt(totals.subtotal)} icon={<FileText className="h-4 w-4" />} hint={`${cobertura}% de cobertura atual`} />
+          <KpiCard label="Aptos" value={fmt(aptosTotal)} icon={<CheckCircle2 className="h-4 w-4" />} hint={`${pct(aptosTotal, totals.total)}% do total`} tone="success" />
+          <KpiCard label="Desvio para meta" value={fmt(totals.desvio)} icon={<TrendingDown className="h-4 w-4" />} hint={`${pendentes} comunidades pendentes`} tone="danger" />
         </section>
 
-        {/* Charts */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6" style={{ boxShadow: "var(--shadow-elegant)" }}>
             <div className="flex items-center justify-between mb-6">
@@ -106,10 +109,7 @@ function Dashboard() {
                 <BarChart data={barData} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} angle={-25} textAnchor="end" interval={0} />
                   <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <Tooltip
-                    contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12 }}
-                    cursor={{ fill: "var(--muted)" }}
-                  />
+                  <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12 }} cursor={{ fill: "var(--muted)" }} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="Meta" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
                   <Bar dataKey="Atingido" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
@@ -143,7 +143,6 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Community cards */}
         <section>
           <div className="flex items-end justify-between mb-4">
             <div>
@@ -155,14 +154,14 @@ function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {comunidades.map((c) => {
               const atingido = c.subtotal + c.desvio;
-              const progresso = Math.max(0, Math.min(100, Math.round((atingido / c.subtotal) * 100)));
+              const progresso = Math.max(0, Math.min(100, Math.round((atingido / Math.max(c.subtotal, 1)) * 100)));
               const ok = c.desvio >= 0;
               return (
                 <div key={c.apf} className="group rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-all" style={{ boxShadow: "var(--shadow-elegant)" }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{c.apf}</p>
-                      <h3 className="font-semibold text-sm mt-1 truncate">{c.comunidade.replace("Comunidade ", "")}</h3>
+                      <h3 className="font-semibold text-sm mt-1 truncate">{c.comunidade}</h3>
                     </div>
                     <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${c.status === "pendente" ? "bg-[color-mix(in_oklab,var(--warning)_20%,transparent)] text-[var(--warning)]" : "bg-accent text-accent-foreground"}`}>
                       {c.status === "pendente" ? "Pendente" : "Ativa"}
@@ -175,13 +174,7 @@ function Dashboard() {
                   </div>
 
                   <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${progresso}%`,
-                        background: ok ? "var(--gradient-primary)" : "var(--chart-4)",
-                      }}
-                    />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${progresso}%`, background: ok ? "var(--gradient-primary)" : "var(--chart-4)" }} />
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">{progresso}% da meta</span>
@@ -202,7 +195,6 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Table */}
         <section className="rounded-2xl border border-border bg-card overflow-hidden" style={{ boxShadow: "var(--shadow-elegant)" }}>
           <div className="px-6 py-4 border-b border-border">
             <h2 className="text-base font-semibold">Detalhamento completo</h2>
@@ -223,10 +215,10 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {comunidades.map((c) => (
+                {comunidades.map((c: Comunidade) => (
                   <tr key={c.apf} className="border-t border-border hover:bg-muted/40">
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{c.apf}</td>
-                    <td className="px-4 py-3 font-medium">{c.comunidade.replace("Comunidade ", "")}</td>
+                    <td className="px-4 py-3 font-medium">{c.comunidade}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.total)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.subtotal)}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-[var(--success)]">{fmt(c.apto)}</td>
@@ -252,7 +244,7 @@ function Dashboard() {
         </section>
 
         <footer className="text-center text-xs text-muted-foreground py-6">
-          Fonte: Resumo Geral · Programa habitacional João Pessoa/PB
+          Fonte: Google Sheets · aba "RESUMO GERAL" · Programa habitacional João Pessoa/PB
         </footer>
       </main>
     </div>
