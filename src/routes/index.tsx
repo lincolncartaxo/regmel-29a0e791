@@ -185,8 +185,9 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-border grid grid-cols-3 gap-2 text-center">
-                    <Mini label="Aptos" value={c.apto + c.aptoSemContrato + c.aptoDuplicado} icon="ok" />
+                  <div className="mt-4 pt-4 border-t border-border grid grid-cols-4 gap-2 text-center">
+                    <Mini label="Aptos" value={c.apto} icon="ok" />
+                    <Mini label="Apto pend." value={c.aptoSemContrato + c.aptoDuplicado} icon="warn" />
                     <Mini label="Inaptos" value={c.inapto + c.inaptoNisNaoLocalizado + c.inaptoNaoRf + c.inaptoSemContrato} icon="bad" />
                     <Mini label="Contratos" value={c.temContrato} icon="doc" />
                   </div>
