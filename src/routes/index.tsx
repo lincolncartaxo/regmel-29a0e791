@@ -267,9 +267,9 @@ function KpiCard({ label, value, icon, hint, tone }: { label: string; value: str
   );
 }
 
-function Mini({ label, value, icon }: { label: string; value: number; icon: "ok" | "bad" | "doc" }) {
-  const Icon = icon === "ok" ? CheckCircle2 : icon === "bad" ? XCircle : FileText;
-  const color = icon === "ok" ? "text-[var(--success)]" : icon === "bad" ? "text-destructive" : "text-muted-foreground";
+function Mini({ label, value, icon }: { label: string; value: number; icon: "ok" | "bad" | "doc" | "warn" }) {
+  const Icon = icon === "ok" ? CheckCircle2 : icon === "bad" ? XCircle : icon === "warn" ? AlertTriangle : FileText;
+  const color = icon === "ok" ? "text-[var(--success)]" : icon === "bad" ? "text-destructive" : icon === "warn" ? "text-[var(--warning)]" : "text-muted-foreground";
   return (
     <div>
       <div className={`flex items-center justify-center gap-1 ${color}`}>
