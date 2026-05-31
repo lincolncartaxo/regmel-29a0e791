@@ -211,6 +211,7 @@ function Dashboard() {
                   <th className="text-right px-4 py-3 font-medium">Total</th>
                   <th className="text-right px-4 py-3 font-medium">Meta</th>
                   <th className="text-right px-4 py-3 font-medium">Apto</th>
+                  <th className="text-right px-4 py-3 font-medium" title="Apto - Duplicado + Apto - Sem Contrato">Apto pend.</th>
                   <th className="text-right px-4 py-3 font-medium">Inapto</th>
                   <th className="text-right px-4 py-3 font-medium">Contratos</th>
                   <th className="text-right px-4 py-3 font-medium">Desvio</th>
