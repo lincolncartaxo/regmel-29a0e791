@@ -225,6 +225,7 @@ function Dashboard() {
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.total)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.subtotal)}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-[var(--success)]">{fmt(c.apto)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-[var(--warning)]">{fmt(c.aptoSemContrato + c.aptoDuplicado)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.inapto + c.inaptoNisNaoLocalizado + c.inaptoNaoRf + c.inaptoSemContrato)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.temContrato)}</td>
                     <td className={`px-4 py-3 text-right tabular-nums font-semibold ${c.desvio >= 0 ? "text-[var(--success)]" : "text-destructive"}`}>
