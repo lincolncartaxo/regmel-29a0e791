@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { ArrowUpRight, Users, CheckCircle2, XCircle, FileText, TrendingDown, Building2, RefreshCw } from "lucide-react";
+import { ArrowUpRight, Users, CheckCircle2, XCircle, FileText, TrendingDown, Building2, RefreshCw, AlertTriangle } from "lucide-react";
 
 const resumoQuery = queryOptions({
   queryKey: ["resumo"],
