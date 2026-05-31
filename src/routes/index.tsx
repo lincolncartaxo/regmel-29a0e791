@@ -36,7 +36,8 @@ function Dashboard() {
   const ativas = comunidades.filter((c) => c.status === "em_andamento");
   const pendentes = comunidades.filter((c) => c.status === "pendente").length;
   const metaTotal = totals.subtotal;
-  const aptosTotal = totals.apto + totals.aptoSemContrato + totals.aptoDuplicado;
+  const aptosConfirmados = totals.apto;
+  const aptosComPendencia = totals.aptoSemContrato + totals.aptoDuplicado;
   const inaptosTotal = totals.inapto + totals.inaptoNisNaoLocalizado + totals.inaptoNaoRf + totals.inaptoSemContrato;
   const cobertura = pct(metaTotal + totals.desvio, metaTotal);
 
@@ -47,10 +48,10 @@ function Dashboard() {
   }));
 
   const distData = [
-    { name: "Aptos", value: aptosTotal, color: "var(--chart-1)" },
+    { name: "Aptos confirmados", value: aptosConfirmados, color: "var(--chart-1)" },
+    { name: "Aptos c/ pendência", value: aptosComPendencia, color: "var(--chart-3)" },
     { name: "Inaptos", value: inaptosTotal, color: "var(--chart-4)" },
     { name: "Tem contrato", value: totals.temContrato, color: "var(--chart-2)" },
-    { name: "Sem consulta", value: totals.semContratoSemConsulta, color: "var(--chart-3)" },
   ];
 
   const updated = new Date(updatedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
