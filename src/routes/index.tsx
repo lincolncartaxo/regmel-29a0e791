@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { ArrowUpRight, Users, CheckCircle2, XCircle, FileText, TrendingDown, Building2, RefreshCw } from "lucide-react";
+import { ArrowUpRight, Users, CheckCircle2, XCircle, FileText, TrendingDown, Building2, RefreshCw, AlertTriangle } from "lucide-react";
 
 const resumoQuery = queryOptions({
   queryKey: ["resumo"],
@@ -36,7 +36,8 @@ function Dashboard() {
   const ativas = comunidades.filter((c) => c.status === "em_andamento");
   const pendentes = comunidades.filter((c) => c.status === "pendente").length;
   const metaTotal = totals.subtotal;
-  const aptosTotal = totals.apto + totals.aptoSemContrato + totals.aptoDuplicado;
+  const aptosConfirmados = totals.apto;
+  const aptosComPendencia = totals.aptoSemContrato + totals.aptoDuplicado;
   const inaptosTotal = totals.inapto + totals.inaptoNisNaoLocalizado + totals.inaptoNaoRf + totals.inaptoSemContrato;
   const cobertura = pct(metaTotal + totals.desvio, metaTotal);
 
@@ -47,10 +48,10 @@ function Dashboard() {
   }));
 
   const distData = [
-    { name: "Aptos", value: aptosTotal, color: "var(--chart-1)" },
+    { name: "Aptos confirmados", value: aptosConfirmados, color: "var(--chart-1)" },
+    { name: "Aptos c/ pendência", value: aptosComPendencia, color: "var(--chart-3)" },
     { name: "Inaptos", value: inaptosTotal, color: "var(--chart-4)" },
     { name: "Tem contrato", value: totals.temContrato, color: "var(--chart-2)" },
-    { name: "Sem consulta", value: totals.semContratoSemConsulta, color: "var(--chart-3)" },
   ];
 
   const updated = new Date(updatedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
@@ -92,7 +93,7 @@ function Dashboard() {
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard label="Total de famílias" value={fmt(totals.total)} icon={<Users className="h-4 w-4" />} hint={`${comunidades.length} comunidades`} />
           <KpiCard label="Meta (50% + 1)" value={fmt(totals.subtotal)} icon={<FileText className="h-4 w-4" />} hint={`${cobertura}% de cobertura atual`} />
-          <KpiCard label="Aptos" value={fmt(aptosTotal)} icon={<CheckCircle2 className="h-4 w-4" />} hint={`${pct(aptosTotal, totals.total)}% do total`} tone="success" />
+          <KpiCard label="Aptos confirmados" value={fmt(aptosConfirmados)} icon={<CheckCircle2 className="h-4 w-4" />} hint={`${pct(aptosConfirmados, totals.total)}% · +${fmt(aptosComPendencia)} c/ pendência`} tone="success" />
           <KpiCard label="Desvio para meta" value={fmt(totals.desvio)} icon={<TrendingDown className="h-4 w-4" />} hint={`${pendentes} comunidades pendentes`} tone="danger" />
         </section>
 
@@ -184,8 +185,9 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-border grid grid-cols-3 gap-2 text-center">
-                    <Mini label="Aptos" value={c.apto + c.aptoSemContrato + c.aptoDuplicado} icon="ok" />
+                  <div className="mt-4 pt-4 border-t border-border grid grid-cols-4 gap-2 text-center">
+                    <Mini label="Aptos" value={c.apto} icon="ok" />
+                    <Mini label="Apto pend." value={c.aptoSemContrato + c.aptoDuplicado} icon="warn" />
                     <Mini label="Inaptos" value={c.inapto + c.inaptoNisNaoLocalizado + c.inaptoNaoRf + c.inaptoSemContrato} icon="bad" />
                     <Mini label="Contratos" value={c.temContrato} icon="doc" />
                   </div>
@@ -209,6 +211,7 @@ function Dashboard() {
                   <th className="text-right px-4 py-3 font-medium">Total</th>
                   <th className="text-right px-4 py-3 font-medium">Meta</th>
                   <th className="text-right px-4 py-3 font-medium">Apto</th>
+                  <th className="text-right px-4 py-3 font-medium" title="Apto - Duplicado + Apto - Sem Contrato">Apto pend.</th>
                   <th className="text-right px-4 py-3 font-medium">Inapto</th>
                   <th className="text-right px-4 py-3 font-medium">Contratos</th>
                   <th className="text-right px-4 py-3 font-medium">Desvio</th>
@@ -222,6 +225,7 @@ function Dashboard() {
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.total)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.subtotal)}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-[var(--success)]">{fmt(c.apto)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-[var(--warning)]">{fmt(c.aptoSemContrato + c.aptoDuplicado)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.inapto + c.inaptoNisNaoLocalizado + c.inaptoNaoRf + c.inaptoSemContrato)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(c.temContrato)}</td>
                     <td className={`px-4 py-3 text-right tabular-nums font-semibold ${c.desvio >= 0 ? "text-[var(--success)]" : "text-destructive"}`}>
@@ -234,6 +238,7 @@ function Dashboard() {
                   <td className="px-4 py-3 text-right tabular-nums">{fmt(totals.total)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{fmt(totals.subtotal)}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-[var(--success)]">{fmt(totals.apto)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-[var(--warning)]">{fmt(totals.aptoSemContrato + totals.aptoDuplicado)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{fmt(totals.inapto + totals.inaptoNisNaoLocalizado + totals.inaptoNaoRf + totals.inaptoSemContrato)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{fmt(totals.temContrato)}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-destructive">{fmt(totals.desvio)}</td>
@@ -265,9 +270,9 @@ function KpiCard({ label, value, icon, hint, tone }: { label: string; value: str
   );
 }
 
-function Mini({ label, value, icon }: { label: string; value: number; icon: "ok" | "bad" | "doc" }) {
-  const Icon = icon === "ok" ? CheckCircle2 : icon === "bad" ? XCircle : FileText;
-  const color = icon === "ok" ? "text-[var(--success)]" : icon === "bad" ? "text-destructive" : "text-muted-foreground";
+function Mini({ label, value, icon }: { label: string; value: number; icon: "ok" | "bad" | "doc" | "warn" }) {
+  const Icon = icon === "ok" ? CheckCircle2 : icon === "bad" ? XCircle : icon === "warn" ? AlertTriangle : FileText;
+  const color = icon === "ok" ? "text-[var(--success)]" : icon === "bad" ? "text-destructive" : icon === "warn" ? "text-[var(--warning)]" : "text-muted-foreground";
   return (
     <div>
       <div className={`flex items-center justify-center gap-1 ${color}`}>
