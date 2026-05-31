@@ -93,7 +93,7 @@ function Dashboard() {
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard label="Total de famílias" value={fmt(totals.total)} icon={<Users className="h-4 w-4" />} hint={`${comunidades.length} comunidades`} />
           <KpiCard label="Meta (50% + 1)" value={fmt(totals.subtotal)} icon={<FileText className="h-4 w-4" />} hint={`${cobertura}% de cobertura atual`} />
-          <KpiCard label="Aptos" value={fmt(aptosTotal)} icon={<CheckCircle2 className="h-4 w-4" />} hint={`${pct(aptosTotal, totals.total)}% do total`} tone="success" />
+          <KpiCard label="Aptos confirmados" value={fmt(aptosConfirmados)} icon={<CheckCircle2 className="h-4 w-4" />} hint={`${pct(aptosConfirmados, totals.total)}% · +${fmt(aptosComPendencia)} c/ pendência`} tone="success" />
           <KpiCard label="Desvio para meta" value={fmt(totals.desvio)} icon={<TrendingDown className="h-4 w-4" />} hint={`${pendentes} comunidades pendentes`} tone="danger" />
         </section>
 
